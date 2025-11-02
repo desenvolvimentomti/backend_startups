@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr, field_validator
+from pydantic import BaseModel, Field, EmailStr, field_validator, HttpUrl, constr
 import re
 from typing import Optional
 
@@ -61,6 +61,12 @@ class Empresa(BaseModel):
     ja_pivotou: str 
     comunidades: str
     solucao: str
+    # --- NOVOS CAMPOS ADICIONADOS ---
+    link_apresentacao: Optional[str] = None
+    link_video: Optional[str] = None
+    telefone_contato: Optional[str] = None   
 
     class Config:
         from_attributes = True
+
+    # --- SCHEMAS PARA OS ENDPOINTS ---
