@@ -20,8 +20,13 @@ from fastapi.staticfiles import StaticFiles
 
 from .search_engine import SearchEngine
 from .database import engine,  get_db, table_registry # Base,
-from . import models, security, schemas, upload_router, crud
+from . import models, security, schemas, upload_router, empresa_router,crud
 from .schemas import UserLogin
+
+
+
+
+
 
 # --- ADICIONADO: Configuração do Diretório Estático ---
 # Deve corresponder ao STATIC_DIR no upload_router.py
@@ -74,6 +79,7 @@ app = FastAPI(title="API de Pesquisa de Startups", lifespan=lifespan)
 
 # --- Montar Roteadores ---
 app.include_router(upload_router.router, tags=["Uploads"])
+app.include_router(empresa_router.router)
 
 
 @app.post("/register", response_model=schemas.Token)

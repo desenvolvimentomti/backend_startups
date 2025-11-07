@@ -6,21 +6,21 @@ from . import models, schemas, security # Importamos security para o hashing
 def get_empresa(db: Session, empresa_id: int):
     """
     Busca uma empresa pelo seu ID.
-    (Necessário para o upload_router.py)
+
     """
     return db.query(models.Empresa).filter(models.Empresa.id == empresa_id).first()
 
 def get_all_empresas(db: Session, skip: int = 0, limit: int = 100):
     """
-    Busca todas as empresas, com paginação opcional.
-    (Refatoração do seu endpoint /companies)
+    Busca todas as empresas
+
     """
     return db.query(models.Empresa).offset(skip).limit(limit).all()
 
 def update_empresa_link(db: Session, empresa_id: int, link: str):
     """
     Atualiza o campo link_apresentacao de uma empresa específica.
-    (Necessário para o upload_router.py)
+
     """
     db_empresa = get_empresa(db, empresa_id=empresa_id)
     if db_empresa:
@@ -28,6 +28,26 @@ def update_empresa_link(db: Session, empresa_id: int, link: str):
         db.commit()
         db.refresh(db_empresa)
     return db_empresa
+
+def update_empresa_midia(db: Session, db_empresa: models.Empresa, midia_data: schemas.EmpresaMidiaUpdate) -> models.Empresa:
+    """
+    Atualiza campos de mídia de uma empresa. 
+    SERA O NOVO ACESSO DO DB USADO NO NOVO ROUTER
+
+    """
+    # Converte o schema Pydantic para um dicionário,
+    # incluindo apenas os valores que foram realmente enviados (exclude_unset=True)
+    update_data = midia_data.model_dump(exclude_unset=True)
+    
+    # Itera sobre o dicionário e atualiza o objeto do SQLAlchemy
+    for key, value in update_data.items():
+        setattr(db_empresa, key, value)
+        
+    db.commit()
+    db.refresh(db_empresa)
+    return db_empresa
+
+
 
 # --- Funções CRUD para Usuário ---
 

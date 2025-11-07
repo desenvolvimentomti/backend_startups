@@ -146,15 +146,15 @@ def test_upload_presentation_local_success(client: TestClient, db_session: Sessi
         file_name = file_url.split("/")[-1]
         caminho_arquivo_salvo = os.path.join(TEST_UPLOADS_DIR, file_name)
 
-        # 2. Verificar se o Arquivo foi Salvo Fisicamente
+        # 2. Verificar se Salvo Fisicamente
         assert os.path.exists(caminho_arquivo_salvo)
         
-        # 3. Verificar se o Banco de Dados foi Atualizado
+        # 3. Verificar  BD se esta Atualizado
         db.refresh(test_empresa) # Recarregar dados do BD
         assert test_empresa.link_apresentacao == file_url
 
     finally:
-        # 4. Limpeza: Remover o arquivo criado, se existir
+        # 4. Limpeza: 
         if caminho_arquivo_salvo and os.path.exists(caminho_arquivo_salvo):
             os.remove(caminho_arquivo_salvo)
 
@@ -178,7 +178,6 @@ def test_upload_file_invalid_mime_type(client: TestClient, db_session: Session):
 def test_upload_to_non_existent_empresa(client: TestClient, db_session: Session):
     """
     Testa a falha ao tentar dar upload para uma empresa que não existe.
-    (Nota: Tive que adicionar o db_session aqui para que o setup do client funcione)
     """
     fake_pdf_content = b"%PDF-1.0..."
     fake_file = io.BytesIO(fake_pdf_content)

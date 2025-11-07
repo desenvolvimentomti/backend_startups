@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr, field_validator, HttpUrl, constr,  AnyHttpUrl
+from pydantic import BaseModel, Field, EmailStr, field_validator, HttpUrl, constr,  AnyHttpUrl,ConfigDict
 import re
 from typing import Optional
 
@@ -7,7 +7,6 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(min_length=4)
-
 
     @field_validator('email')
     def validate_email_domain(cls, v):
@@ -33,8 +32,7 @@ class User(UserBase):
     id: int
     is_active: Optional[bool] = True
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Empresa(BaseModel):
@@ -139,7 +137,37 @@ class Empresa(BaseModel):
         # 3. Se não passou em nenhum, falha
         raise ValueError('O link da apresentação deve ser um .pdf, .ppt, .pptx, Google Drive ou OneDrive')
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
+
+# ---para os novos endpoints de editar os dados de links pelo id ---
+
+class EmpresaMidiaResponse(BaseModel):
+    """Schema para GET /empresa/{id}/midia (retorna apenas estes campos)"""
+    link_apresentacao: Optional[str] = None
+    link_video: Optional[str] = None
+    telefone_contato: Optional[str] = None
+    
+    model_config = ConfigDict(from_attributes=True)
+
+class EmpresaMidiaUpdate(BaseModel):
+    """Schema para POST /empresa/{id}/midia (aceita estes campos opcionais)"""
+    link_apresentacao: Optional[str] = None
+    link_video: Optional[str] = None
+    telefone_contato: Optional[str] = None
+    
+    # Reutilizar os validadores no Pydantic v2 no Empresa
+    
+    @field_validator('telefone_contato')
+    def validate_telefone(cls, v):
+        # Chama o validador estático da classe Empresa
+        return Empresa.validate_telefone(v)
+
+    @field_validator('link_video')
+    def validate_video_url(cls, v):
+        return Empresa.validate_video_url(v)
+
+    @field_validator('link_apresentacao')
+    def validate_presentation_link(cls, v):
+        return Empresa.validate_presentation_link(v)
     
