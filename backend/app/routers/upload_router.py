@@ -13,8 +13,8 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 # Importe os seus módulos de banco de dados e schemas
-from . import crud, schemas  # <--- crud.py é importado aqui
-from .database import get_db
+from .. import crud, schemas  # <--- crud.py é importado aqui
+from ..database import get_db
 
 # --- Configuração do Armazenamento Local ---
 STATIC_DIR = "static"
@@ -30,7 +30,7 @@ ALLOWED_MIME_TYPES = [
     "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 ]
 
-@router.post("/upload/apresentacao/{empresa_id}", response_model=schemas.Empresa)
+@router.patch("/upload/apresentacao/{empresa_id}", response_model=schemas.Empresa)
 def upload_presentation_local(
     empresa_id: int,
     request: Request,

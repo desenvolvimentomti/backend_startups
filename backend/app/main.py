@@ -1,6 +1,8 @@
 import uvicorn
 import nltk
-import warnings 
+import warnings
+
+from .routers import empresa_router, upload_router 
 warnings.filterwarnings(
     "ignore", 
     message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None", 
@@ -20,7 +22,8 @@ from fastapi.staticfiles import StaticFiles
 
 from .search_engine import SearchEngine
 from .database import engine,  get_db, table_registry # Base,
-from . import models, security, schemas, upload_router, empresa_router,crud
+from . import models, security, schemas, crud
+from .routers import upload_router, empresa_router
 from .schemas import UserLogin
 
 
