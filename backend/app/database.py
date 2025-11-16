@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base, registry
+from sqlalchemy.orm import sessionmaker, declarative_base
 import psycopg2
 from psycopg2.extensions import register_adapter, AsIs
 
@@ -24,9 +24,7 @@ engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-#Base = declarative_base()
-table_registry = registry()
-metadata = table_registry.metadata
+Base = declarative_base()
 
 def get_db():
     db = SessionLocal()

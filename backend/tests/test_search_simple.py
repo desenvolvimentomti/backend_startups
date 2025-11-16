@@ -2,9 +2,9 @@ import pytest
 from typing import Set, Dict, Any, List
 from unidecode import unidecode
 
-from ..app.search_engine import SearchEngine
-from ..app import models as models_app
-#..app.
+from backend.app.search_engine import SearchEngine
+from backend.app import models as models_app
+
 
 MOCK_COMPANIES_DATA = [
     {
