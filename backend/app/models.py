@@ -1,45 +1,62 @@
 from sqlalchemy import Column, Integer, String, Text, BigInteger
-from .database import Base
+from sqlalchemy.orm import Mapped, mapped_column, registry
+from sqlalchemy.types import Integer 
+#from .database import Base
+from .database import table_registry
 
+# --- CORREÇÃO DE COMPATIBILIDADE (SQLite/PostgreSQL) ---
 
+PG_BIGINT = BigInteger().with_variant(Integer, "sqlite")
 
-class Empresa(Base):
+#table_registry = registry()
+
+@table_registry.mapped_as_dataclass
+class Empresa:
     __tablename__ = "startups"
-    __table_args__ = {'schema': 'public'}
+    #__table_args__ = {'schema': 'public'}
 
-    id = Column("id", BigInteger, primary_key=True, index=True)
-    nome_da_empresa = Column("nome_da_empresa", String(255), index=True)
-    endereco = Column("endereço", String)
-    cnpj = Column("cnpj", String(18), unique=True, index=True)
-    ano_de_fundacao = Column("ano_de_fundação", BigInteger)
-    site = Column("site", String)
-    rede_social = Column("rede_social", String)
-    cadastrado_por = Column("cadastrado_por", String)
-    cargo = Column("cargo", String)
-    email = Column("e-mail", String)
-    setor_principal = Column("setor_principal", String, index=True)
-    setor_secundario = Column("setor_secundario", String)
-    fase_da_startup = Column("fase_da_startup", String)
-    colaboradores = Column("colaboradores", String)
-    publico_alvo = Column("publico_alvo", String)
-    modelo_de_negocio = Column("modelo_de_negocio", String)
-    recebeu_investimento = Column("recebeu_investimento", String)
-    negocios_no_exterior = Column("negócios_no_exterior", String)
-    faturamento = Column("faturamento", String)
-    patente = Column("patente", String)
-    ja_pivotou = Column("já_pivotou?", String)
-    comunidades = Column("comunidades", String)
-    solucao = Column("solução", Text)
+    id: Mapped[int] = mapped_column(PG_BIGINT, primary_key=True, index=True, init=False)
+    nome_da_empresa: Mapped[str] = mapped_column(String(255), index=True)
+    endereco: Mapped[str] = mapped_column("endereço")
+    cnpj: Mapped[str] = mapped_column(String(18), unique=True, index=True)
+    ano_de_fundacao: Mapped[int] = mapped_column("ano_de_fundação", BigInteger)
+    site: Mapped[str]
+    rede_social: Mapped[str]
+    cadastrado_por: Mapped[str]
+    cargo: Mapped[str]
+    email: Mapped[str] = mapped_column("e-mail")
+    setor_principal: Mapped[str] = mapped_column(index=True)
+    setor_secundario: Mapped[str]
+    fase_da_startup: Mapped[str]
+    colaboradores: Mapped[str]
+    publico_alvo: Mapped[str]
+    modelo_de_negocio: Mapped[str]
+    recebeu_investimento: Mapped[str]
+    negocios_no_exterior: Mapped[str] = mapped_column("negócios_no_exterior")
+    faturamento: Mapped[str]
+    patente: Mapped[str]
+    ja_pivotou: Mapped[str] = mapped_column("já_pivotou?")
+    comunidades: Mapped[str]
+    solucao: Mapped[str] = mapped_column("solução", Text)
+    
+    # --- NOVOS CAMPOS (Nuláveis) ---
+
+    link_apresentacao: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
+    link_video: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
+    telefone_contato: Mapped[str | None] = mapped_column(String(20), nullable=True, default=None)
 
 
 
-    def __repr__(self):
-        return f"<Empresa(nome='{self.nome_da_empresa}', setor='{self.setor_principal}')>"
+    #def __repr__(self):
+    #    return f"<Empresa(nome='{self.nome_da_empresa}', setor='{self.setor_principal}')>"
 
-class Usuario(Base):
+@table_registry.mapped_as_dataclass
+class Usuario:
     __tablename__ = "usuarios"
-    __table_args__ = {'schema': 'public'}
+    #__table_args__ = {'schema': 'public'}
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(255), unique=True, index=True)
-    senha_hash = Column(String(255))
+    id: Mapped[int] = mapped_column(primary_key=True, index=True, init=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    senha_hash: Mapped[str] = mapped_column(String(255))
+
+    

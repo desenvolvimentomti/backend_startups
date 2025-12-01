@@ -1,7 +1,7 @@
-
-
 import os
-from datetime import datetime, timedelta
+# --- CORREÇÃO DE IMPORTAÇÃO ---
+# Precisamos da classe 'datetime', da classe 'timedelta', e do objeto 'timezone'
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -18,6 +18,8 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
+# (Vou usar 1800 segundos (30 min) como o seu código, 
+# mas manter esta variável é uma boa prática)
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 if not SECRET_KEY:
@@ -35,10 +37,16 @@ def verify_password(plain_password, hashed_password):
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
+    
+    # --- CORREÇÃO DA LÓGICA DE TEMPO ---
+    
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        # 1. Usar datetime.now(timezone.utc) para obter a hora atual em UTC
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        # 2. Usar timedelta(seconds=...) para somar corretamente
+        expire = datetime.now(timezone.utc) + timedelta(seconds=1800) # 1800 segundos = 30 minutos
+    
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt

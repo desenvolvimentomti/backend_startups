@@ -2,9 +2,9 @@ import pytest
 from typing import Set, Dict, Any, List
 from unidecode import unidecode
 
-from backend.app.search_engine import SearchEngine
-from backend.app import models as models_app
-
+from ..app.search_engine import SearchEngine
+from ..app import models as models_app
+#..app.
 
 MOCK_COMPANIES_DATA = [
     {
@@ -133,5 +133,4 @@ def test_optimized_search_logic_metrics(case: Dict[str, Any]):
         f"Precision baixa ({precision:.2f}). Esperado >= {MIN_PRECISION}."
     )
     assert recall >= MIN_RECALL, (
-        f"Recall baixo ({recall:.2f}). Esperado >= {MIN_RECALL}."
-    )
+        f"Recall baixo ({recall:.2f}). Esperado >= {MIN_RECALL}.")
