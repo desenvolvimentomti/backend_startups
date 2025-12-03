@@ -7,13 +7,14 @@ from ..app.search_engine import SearchEngine
 # --- MOCK CLASS ---
 # Definida localmente para não depender do models.py e evitar erro de 'id'
 class MockEmpresa:
-    def __init__(self, id, nome_da_empresa, solucao, setor_principal, setor_secundario, fase_da_startup="Operação", **kwargs):
+    def __init__(self, id, nome_da_empresa, solucao, setor_principal, setor_secundario, fase_da_startup="Operação",tag="Placeholder", **kwargs):
         self.id = id
         self.nome_da_empresa = nome_da_empresa
         self.solucao = solucao
         self.setor_principal = setor_principal
         self.setor_secundario = setor_secundario
         self.fase_da_startup = fase_da_startup
+        self.tag = tag        
 
 
 # Dados de Mock Específicos para Teste de Plurais
@@ -24,14 +25,14 @@ MOCK_PLURAL_DATA = [
         "solucao": "Plataforma para conectar nutricionistas aos pacientes.", 
         "setor_principal": "Saúde", "setor_secundario": "Bem-estar",
         "fase_da_startup": "Operação", "cnpj": "11.111.111/0001-11", "endereco": "A", "ano_de_fundacao": 2024, "site": "a", "rede_social": "a", "cadastrado_por": "a", "cargo": "a", "email": "a", "colaboradores": "a", "publico_alvo": "a", "modelo_de_negocio": "a", "recebeu_investimento": "a", "negocios_no_exterior": "a", "faturamento": "a", "patente": "a", "ja_pivotou": "a", "comunidades": "a", 
-        "link_apresentacao": None, "link_video": None, "telefone_contato": None
+        "link_apresentacao": None, "link_video": None, "telefone_contato": None, "tag": None
     },
     {
         "id": 2, "nome_da_empresa": "TechDev", 
         "solucao": "Desenvolvimento de software.", 
         "setor_principal": "TI", "setor_secundario": "Dev",
         "fase_da_startup": "Operação", "cnpj": "22.222.222/0001-22", "endereco": "A", "ano_de_fundacao": 2024, "site": "a", "rede_social": "a", "cadastrado_por": "a", "cargo": "a", "email": "a", "colaboradores": "a", "publico_alvo": "a", "modelo_de_negocio": "a", "recebeu_investimento": "a", "negocios_no_exterior": "a", "faturamento": "a", "patente": "a", "ja_pivotou": "a", "comunidades": "a", 
-        "link_apresentacao": None, "link_video": None, "telefone_contato": None
+        "link_apresentacao": None, "link_video": None, "telefone_contato": None, "tag": None
     },
     {
         "id": 3, "nome_da_empresa": "NutriOne", 
@@ -39,7 +40,7 @@ MOCK_PLURAL_DATA = [
         "solucao": "Sou um nutricionista focado em desporto.", 
         "setor_principal": "Saúde", "setor_secundario": "Sport",
         "fase_da_startup": "Operação", "cnpj": "33.333.333/0001-33", "endereco": "A", "ano_de_fundacao": 2024, "site": "a", "rede_social": "a", "cadastrado_por": "a", "cargo": "a", "email": "a", "colaboradores": "a", "publico_alvo": "a", "modelo_de_negocio": "a", "recebeu_investimento": "a", "negocios_no_exterior": "a", "faturamento": "a", "patente": "a", "ja_pivotou": "a", "comunidades": "a", 
-        "link_apresentacao": None, "link_video": None, "telefone_contato": None
+        "link_apresentacao": None, "link_video": None, "telefone_contato": None, "tag": None
     }
 ]
 

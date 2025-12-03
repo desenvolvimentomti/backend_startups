@@ -62,7 +62,8 @@ class Empresa(BaseModel):
     # --- NOVOS CAMPOS ADICIONADOS ---
     link_apresentacao: Optional[str] = None
     link_video: Optional[str] = None
-    telefone_contato: Optional[str] = None   
+    telefone_contato: Optional[str] = None
+    tag: Optional[str] = None    
 
     @field_validator('telefone_contato')
     def validate_telefone(cls, v):

@@ -32,7 +32,7 @@ def initialize_nlp_resources():
     
     # STOP WORDS:
     CORP_AND_COMMON_STOP_WORDS = {'empresa', 'ltda', 's.a', 'eireli', 'companhia', 'solucoes', 'inovacao', 'tecnologia', 'group', 'grupo', 'de', 'a', 'o', 'e', 'do', 'da', 'dos', 'as', 'os', 
-        'um', 'uma', 'uns', 'umas', 'para', 'na', 'no', 'em', 'por', 'foco', 'quer', 'busco', 'ramo', 'com', 'eu', 'tu', 'ele', 'ela', 'documento', 'fazer', 'quero', 'um', 'peca', 'faz', 'que'}
+        'um', 'uma', 'uns', 'umas', 'para', 'na', 'no', 'em', 'por', 'foco', ',','quer', 'busco', 'ramo', 'com', 'eu', 'tu', 'ele', 'ela', 'documento', 'fazer', 'quero', 'um', 'peca', 'faz', 'que'}
     stop_words_pt.update(CORP_AND_COMMON_STOP_WORDS)
     
 initialize_nlp_resources()
@@ -69,7 +69,7 @@ class SearchEngine:
         if self.all_companies_list:
             # --- 1. INDEXAÇÃO ---
             company_texts = [
-                unidecode(f"{c.nome_da_empresa} {c.solucao} {c.setor_principal} {c.setor_secundario}").lower()
+                unidecode(f"{c.nome_da_empresa} {c.solucao} {c.setor_principal} {c.setor_secundario}{c.tag}").lower()
                 for c in self.all_companies_list
             ]
             
@@ -106,7 +106,7 @@ class SearchEngine:
             name_fuzzy_score = fuzz.token_set_ratio(nome_da_empresa_norm, normalized_query)
 
             # B. Score de CONTEXTO (Solução + Setores)
-            contexto_raw = f"{company.solucao} {company.setor_principal} {company.setor_secundario}"
+            contexto_raw = f"{company.solucao} {company.setor_principal} {company.setor_secundario}{company.tag}"
             context_fuzzy_score = fuzz.token_set_ratio(unidecode(contexto_raw).lower(), normalized_query)
 
             # --- 4. CÁLCULO FINAL (Ponderação) ---

@@ -30,8 +30,25 @@ MOCK_COMPANIES_DATA = [
     },
 ]
 
-MOCK_COMPANIES: List[models_app.Empresa] = [models_app.Empresa(**data) for data in MOCK_COMPANIES_DATA]
+#MOCK_COMPANIES: List[models_app.Empresa] = [models_app.Empresa(**data) for data in MOCK_COMPANIES_DATA]
+# CORREÇÃO 
+# função auxiliar para tratar o ID separadamente
+MOCK_COMPANIES: List[models_app.Empresa] = []
 
+for data in MOCK_COMPANIES_DATA:
+    # 1. Fazemos uma cópia para não alterar o original
+    data_copy = data.copy()
+    
+    # 2. Removemos o ID do dicionário antes de passar para o construtor
+    company_id = data_copy.pop("id")
+    
+    # 3. Instanciamos a classe apenas com os dados permitidos
+    empresa = models_app.Empresa(**data_copy)
+    
+    # 4. Atribuímos o ID manualmente após a criação
+    empresa.id = company_id
+    
+    MOCK_COMPANIES.append(empresa)
 
 SEARCH_TEST_CASES = [
     {

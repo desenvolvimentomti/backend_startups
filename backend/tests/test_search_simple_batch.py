@@ -9,7 +9,7 @@ from ..app.search_engine import SearchEngine
 # --- MOCK CLASS ---
 # Usamos isto em vez de models.Empresa para evitar erros de banco de dados (init=False no id)
 class MockEmpresa:
-    def __init__(self, id, nome_da_empresa, solucao, setor_principal, setor_secundario, fase_da_startup="Operação", cnpj=None, endereco=None, **kwargs):
+    def __init__(self, id, nome_da_empresa, solucao, setor_principal, setor_secundario, fase_da_startup="Operação", cnpj=None, endereco=None,tag="Placeholder", **kwargs):
         self.id = id
         self.nome_da_empresa = nome_da_empresa
         self.solucao = solucao
@@ -18,6 +18,7 @@ class MockEmpresa:
         self.fase_da_startup = fase_da_startup
         self.cnpj = cnpj
         self.endereco = endereco
+        self.tag = tag
 
 # --- DADOS DE MOCK ---
 MOCK_COMPANIES_DATA = [
@@ -34,7 +35,7 @@ MOCK_COMPANIES_DATA = [
         "nome_da_empresa": "CyberGuard Pro", 
         "solucao": "Software de segurança proativa que utiliza machine learning", 
         "setor_principal": "Segurança da Informação", 
-        "setor_secundario": "SaaS", 
+        "setor_secundario": "SaaS",
         "fase_da_startup": "Seed"
     },
     {
@@ -42,7 +43,7 @@ MOCK_COMPANIES_DATA = [
         "nome_da_empresa": "ProtoMesh 3D", 
         "solucao": "Serviço de impressão 3D industrial e prototipagem rápida", 
         "setor_principal": "Manufatura Aditiva", 
-        "setor_secundario": "Engenharia", 
+        "setor_secundario": "Engenharia",
         "fase_da_startup": "Growth"
     },
 ]

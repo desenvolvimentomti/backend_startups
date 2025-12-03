@@ -1,4 +1,5 @@
 [
+  "backend/tests/test_empresa_router.py::test_delete_empresa_video",
   "backend/tests/test_empresa_router.py::test_get_empresa_midia_not_found",
   "backend/tests/test_empresa_router.py::test_get_empresa_midia_success",
   "backend/tests/test_empresa_router.py::test_update_empresa_midia_not_found",

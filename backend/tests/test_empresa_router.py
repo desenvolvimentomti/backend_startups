@@ -54,7 +54,12 @@ def db_session() -> Generator[Session, None, None]:
             patente="Não",
             ja_pivotou="Não",
             comunidades="Nenhuma",
-            solucao="Solução de teste."
+            solucao="Solução de teste.",
+            link_apresentacao = None,
+            link_video= None,
+            telefone_contato= None,
+            tag= None    
+        
         )
         db.add(test_empresa)
         db.commit()
@@ -123,34 +128,36 @@ def test_get_empresa_midia_not_found(client: TestClient, db_session: Session):
     assert response.json()["detail"] == "Empresa não encontrada"
 
 def test_update_empresa_midia_success(client: TestClient, db_session: Session):
+
     """
-    Testa o POST /empresa/{id}/midia (Caminho Feliz - Atualização Parcial)
+    Testa as rotas PATCH específicas: /video e /telefone.
+    Adaptado para chamar endpoints separados, já que o router não tem update unificado.
     """
     db, test_empresa = db_session
     
-    # Vamos atualizar apenas o link_video e o telefone
-    data_to_update = {
-        "link_video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        "telefone_contato": "(11) 98765-4321" 
-    }
-    
-    response = client.post(
-        f"/empresa/{test_empresa.id}/midia",
-        json=data_to_update
+    # 1. Atualizar Vídeo
+    video_payload = {"link_video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
+    resp_video = client.patch(
+        f"/empresa/{test_empresa.id}/video",
+        json=video_payload
     )
+    assert resp_video.status_code == 200
+    assert resp_video.json()["link_video"] == video_payload["link_video"]
+
+    # 2. Atualizar Telefone
+    phone_payload = {"telefone_contato": "(11) 98765-4321"}
+    resp_phone = client.patch(
+        f"/empresa/{test_empresa.id}/telefone",
+        json=phone_payload
+    )
+    assert resp_phone.status_code == 200
+    assert resp_phone.json()["telefone_contato"] == phone_payload["telefone_contato"]
     
-    # 1. Verificar a Resposta da API
-    assert response.status_code == 200
-    data = response.json()
-    assert data["link_video"] == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-    assert data["telefone_contato"] == "(11) 98765-4321"
-    assert data["link_apresentacao"] is None # Garante que não foi alterado
-    
-    # 2. Verificar o Banco de Dados
+    # 3. Verificar persistência no banco
     db.refresh(test_empresa)
-    assert test_empresa.link_video == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-    assert test_empresa.telefone_contato == "(11) 98765-4321"
-    assert test_empresa.link_apresentacao is None # Confirma que o BD não foi alterado
+    assert test_empresa.link_video == video_payload["link_video"]
+    assert test_empresa.telefone_contato == phone_payload["telefone_contato"]
+    assert test_empresa.link_apresentacao is None # Não mexemos neste
 
 def test_update_empresa_midia_validation_error(client: TestClient, db_session: Session):
     """
@@ -163,8 +170,8 @@ def test_update_empresa_midia_validation_error(client: TestClient, db_session: S
         "telefone_contato": "123456789"
     }
     
-    response = client.post(
-        f"/empresa/{test_empresa.id}/midia",
+    response = client.patch(
+        f"/empresa/{test_empresa.id}/telefone",
         json=invalid_data
     )
     
@@ -180,10 +187,25 @@ def test_update_empresa_midia_not_found(client: TestClient, db_session: Session)
         "link_video": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     }
     
-    response = client.post(
-        "/empresa/99999/midia",
+    response = client.patch(
+        "/empresa/99999/video",
         json=data_to_update
     )
     
     assert response.status_code == 404
     assert response.json()["detail"] == "Empresa não encontrada"
+
+    # Teste  DELETE 
+def test_delete_empresa_video(client: TestClient, db_session: Session):
+    db, test_empresa = db_session
+    
+    # Primeiro define um valor
+    test_empresa.link_video = "https://youtube.com/test"
+    db.commit()
+    
+    response = client.delete(f"/empresa/{test_empresa.id}/video")
+    
+    assert response.status_code == 204
+    
+    db.refresh(test_empresa)
+    assert test_empresa.link_video is None

@@ -44,6 +44,7 @@ class Empresa:
     link_apresentacao: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     link_video: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     telefone_contato: Mapped[str | None] = mapped_column(String(20), nullable=True, default=None)
+    tag: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
 
 
 
