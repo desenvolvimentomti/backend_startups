@@ -56,7 +56,7 @@ passlib==1.7.4
 pgvector==0.2.5
 pluggy==1.6.0
 propcache==0.4.1
-psycopg==3.3.2
+psycopg[binary]==3.3.2
 psycopg-pool==3.3.0
 psycopg2-binary==2.9.11
 pyasn1==0.6.1
