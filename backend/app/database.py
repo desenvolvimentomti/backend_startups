@@ -27,6 +27,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 #Base = declarative_base()
 table_registry = registry()
 metadata = table_registry.metadata
+Base = table_registry.generate_base()
 
 def get_db():
     db = SessionLocal()

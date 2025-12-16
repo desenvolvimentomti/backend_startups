@@ -1,21 +1,34 @@
-from sqlalchemy import Column, Integer, String, Text, BigInteger
+from sqlalchemy import Column, Integer, String, Text, BigInteger, Sequence, Enum
 from sqlalchemy.orm import Mapped, mapped_column, registry
-from sqlalchemy.types import Integer 
-#from .database import Base
-from .database import table_registry
+from sqlalchemy.types import Integer
+from pgvector.sqlalchemy import Vector
+from .database import Base, table_registry
+import enum
+
+# --- RBAC: User Roles ---
+class UserRole(str, enum.Enum):
+    """
+    Three-tier role-based access control:
+    - ADMIN: Full access, can manage roles
+    - MAINTAINER: Can CRUD empresas, cannot manage roles
+    - USER: Read-only access
+    """
+    ADMIN = "admin"
+    MAINTAINER = "maintainer"
+    USER = "user"
 
 # --- CORREÇÃO DE COMPATIBILIDADE (SQLite/PostgreSQL) ---
 
 PG_BIGINT = BigInteger().with_variant(Integer, "sqlite")
 
-#table_registry = registry()
+# Create an explicit sequence for the id column
+startups_id_seq = Sequence('startups_id_seq', metadata=Base.metadata)
 
-@table_registry.mapped_as_dataclass
-class Empresa:
+class Empresa(Base):
     __tablename__ = "startups"
     #__table_args__ = {'schema': 'public'}
 
-    id: Mapped[int] = mapped_column(PG_BIGINT, primary_key=True, index=True, init=False)
+    id: Mapped[int] = mapped_column(PG_BIGINT, startups_id_seq, server_default=startups_id_seq.next_value(), primary_key=True, index=True)
     nome_da_empresa: Mapped[str] = mapped_column(String(255), index=True)
     endereco: Mapped[str] = mapped_column("endereço")
     cnpj: Mapped[str] = mapped_column(String(18), unique=True, index=True)
@@ -38,13 +51,17 @@ class Empresa:
     ja_pivotou: Mapped[str] = mapped_column("já_pivotou?")
     comunidades: Mapped[str]
     solucao: Mapped[str] = mapped_column("solução", Text)
-    
+
     # --- NOVOS CAMPOS (Nuláveis) ---
 
     link_apresentacao: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     link_video: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     telefone_contato: Mapped[str | None] = mapped_column(String(20), nullable=True, default=None)
     tag: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
+
+    # --- VECTOR EMBEDDINGS for Semantic Search ---
+    # OpenAI text-embedding-3-small produces 1536-dimensional vectors
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(1536), nullable=True, default=None)
 
 
 
@@ -59,5 +76,7 @@ class Usuario:
     id: Mapped[int] = mapped_column(primary_key=True, index=True, init=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     senha_hash: Mapped[str] = mapped_column(String(255))
+    # RBAC: Default role is USER for new registrations
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.USER, server_default="user")
 
     
