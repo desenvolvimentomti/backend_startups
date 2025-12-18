@@ -128,7 +128,7 @@ def test_upload_presentation_local_success(client: TestClient, db_session: Sessi
     
     try:
         # Simular o POST do form-data
-        response = client.post(
+        response = client.patch(
             f"/upload/apresentacao/{test_empresa.id}", # Usa o ID dinâmico
             files={"file": ("teste.pdf", fake_file, "application/pdf")}
         )
@@ -167,7 +167,7 @@ def test_upload_file_invalid_mime_type(client: TestClient, db_session: Session):
     fake_txt_content = b"isso e um teste"
     fake_file = io.BytesIO(fake_txt_content)
     
-    response = client.post(
+    response = client.patch(
         f"/upload/apresentacao/{test_empresa.id}",
         files={"file": ("teste.txt", fake_file, "text/plain")}
     )
@@ -182,7 +182,7 @@ def test_upload_to_non_existent_empresa(client: TestClient, db_session: Session)
     fake_pdf_content = b"%PDF-1.0..."
     fake_file = io.BytesIO(fake_pdf_content)
     
-    response = client.post(
+    response = client.patch(
         "/upload/apresentacao/99999", # ID que não existe
         files={"file": ("teste.pdf", fake_file, "application/pdf")}
     )

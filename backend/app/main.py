@@ -2,7 +2,6 @@ import uvicorn
 import nltk
 import warnings
 
-from .routers import empresa_router, upload_router 
 warnings.filterwarnings(
     "ignore", 
     message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None", 
@@ -17,7 +16,9 @@ from contextlib import asynccontextmanager
 # --- para StaticFiles ---
 import os
 from fastapi.staticfiles import StaticFiles
-
+# -----
+# Importar text para comandos SQL puros
+from sqlalchemy import text 
 # -----
 
 from .search_engine import SearchEngine
@@ -27,19 +28,52 @@ from .routers import upload_router, empresa_router
 from .schemas import UserLogin
 
 
-
-
-
-
 # --- ADICIONADO: Configuração do Diretório Estático ---
 # Deve corresponder ao STATIC_DIR no upload_router.py
 STATIC_DIR = "static"
 # Garante que o diretório base exista
 os.makedirs(STATIC_DIR, exist_ok=True)
-# --- FIM ADICIONADO ---
-
+# ------
 
 search_engine_instance: Optional[SearchEngine] = None
+
+def sync_database_sequences():
+    """
+    Sincroniza automaticamente o contador de IDs (Sequence) com o valor máximo da tabela.
+    Funciona para SQLite e PostgreSQL.
+    """
+    db_type = engine.name # 'postgresql' ou 'sqlite'
+    
+    with engine.connect() as connection:
+        try:
+            if db_type == "postgresql":
+                print("Sincronizando sequências no PostgreSQL (Render)...")
+                # alinhar a sequência do Postgres com o MAX(id)
+                query = text("""
+                    SELECT setval(
+                        pg_get_serial_sequence('startups', 'id'), 
+                        COALESCE((SELECT MAX(id) FROM startups), 1), 
+                        (SELECT MAX(id) FROM startups) IS NOT NULL
+                    )
+                """)
+                connection.execute(query)
+                connection.commit()
+                
+            elif db_type == "sqlite":
+                print("Sincronizando sequências no SQLite (Local)...")
+                # No SQLite, atualizamos a tabela interna sqlite_sequence
+                query = text("""
+                    UPDATE sqlite_sequence 
+                    SET seq = (SELECT MAX(id) FROM startups) 
+                    WHERE name = 'startups'
+                """)
+                connection.execute(query)
+                connection.commit()
+            
+            print("Sincronização concluída com sucesso!")
+        except Exception as e:
+            # Se a tabela ainda não existir (primeiro boot), o erro é ignorado silenciosamente
+            print(f"Nota: Sincronização de sequência ignorada ou falhou: {e}")
 
 
 @asynccontextmanager
@@ -57,7 +91,11 @@ async def lifespan(app: FastAPI):
         print(f"Erro na criação das tabelas do BD: {e}")
         # Se isto falhar (ex: má conexão), a app não deve arrancar.
         raise RuntimeError(f"Falha na criação das tabelas: {e}")
-        
+    
+    # AUTO-SINCRONIZAÇÃO DE IDS 
+    # Executamos logo após garantir que as tabelas existem
+    sync_database_sequences()
+    # ------
     # Bloco 2: LER as tabelas (agora que existem) para o NLTK.
     print("Verificando e baixando recursos do NLTK...")
     try:
