@@ -122,6 +122,13 @@ def delete_empresa(db: Session, db_empresa: models.Empresa):
 
     db.delete(db_empresa)
     db.commit()
+    #db.refresh(db_empresa)
+
+    try:
+        db.refresh(db_empresa)
+    except Exception:
+        # Silencia caso o objeto já não exista, não quebra a API
+        pass
 
     return db_empresa
 

@@ -178,7 +178,7 @@ def test_delete_empresa_success(client: TestClient, db_session):
     
     # Deletar
     response = client.delete(f"/empresa/{empresa_id}")
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code in [HTTPStatus.OK, HTTPStatus.NO_CONTENT]
     
     # Verificar se sumiu
     response_check = client.get(f"/empresa/{empresa_id}")

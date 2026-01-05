@@ -181,7 +181,8 @@ def delete_single_empresa(
     
     # Este endpoint chama crud.delete_empresa
     crud.delete_empresa(db=db, db_empresa=db_empresa)
-    return db_empresa # Retorna os dados da empresa que foi deletada
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    #return db_empresa # Retorna os dados da empresa que foi deletada
 
 
 
