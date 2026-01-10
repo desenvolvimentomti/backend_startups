@@ -3,5 +3,9 @@
   "backend/tests/test_search_simple.py::test_optimized_search_logic_metrics[Teste 1: Busca AGROTECH (Deve achar #1 e #2)]": true,
   "backend/tests/tests_links.py::test_link_apresentacao_invalido[https://www.dropbox.com/s/123/arquivo.pdf]": true,
   "backend/tests/tests_links.py::test_link_apresentacao_invalido[apenas_um_texto.pdf]": true,
-  "backend/tests/tests_links.py::test_link_apresentacao_invalido[https://www.dropbox.com/s/123/arquivo.ppt]": true
+  "backend/tests/tests_links.py::test_link_apresentacao_invalido[https://www.dropbox.com/s/123/arquivo.ppt]": true,
+  "backend/tests/test_crud_empresa.py::test_create_empresa": true,
+  "backend/tests/test_crud_empresa.py::test_read_empresa": true,
+  "backend/tests/test_crud_empresa.py::test_update_empresa": true,
+  "backend/tests/test_crud_empresa.py::test_delete_empresa": true
 }

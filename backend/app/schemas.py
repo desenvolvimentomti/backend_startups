@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field, EmailStr, field_validator, HttpUrl, const
 import re
 from typing import Optional
 
+
+# -----------schemas para USERS ----------
 class UserBase(BaseModel):
     email: str
 
@@ -34,6 +36,8 @@ class User(UserBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+# -----------schemas para EMPRESAS ----------
+
 
 class Empresa(BaseModel):
     id: int
@@ -41,11 +45,8 @@ class Empresa(BaseModel):
     endereco: str
     cnpj: str
     ano_de_fundacao: int
-    site: Optional[str] = None 
-    rede_social: Optional[str] = None 
-    cadastrado_por: Optional[str] = None 
-    cargo: Optional[str] = None 
-    email: Optional[str] = None 
+
+
     setor_principal: str
     setor_secundario: str
     fase_da_startup: str
@@ -59,7 +60,15 @@ class Empresa(BaseModel):
     ja_pivotou: str 
     comunidades: str
     solucao: str
-    # --- NOVOS CAMPOS ADICIONADOS ---
+
+    # Campos Opcionais
+    email: Optional[str] = None 
+
+    site: Optional[str] = None 
+    rede_social: Optional[str] = None 
+    cadastrado_por: Optional[str] = None 
+    cargo: Optional[str] = None 
+
     link_apresentacao: Optional[str] = None
     link_video: Optional[str] = None
     telefone_contato: Optional[str] = None
@@ -165,7 +174,7 @@ class EmpresaMidiaResponse(BaseModel):
 
     
 class SchemaLinkApresentacaoUpdate(BaseModel):
-    """Schema para POST /empresa/{id}/apresentacao"""
+    """Schema para PATCH /empresa/{id}/apresentacao"""
     link_apresentacao: Optional[str] = None
     
     @field_validator('link_apresentacao')
@@ -174,7 +183,7 @@ class SchemaLinkApresentacaoUpdate(BaseModel):
         return Empresa.validate_presentation_link(v)
 
 class SchemaLinkVideoUpdate(BaseModel):
-    """Schema para POST /empresa/{id}/video"""
+    """Schema para PATCH /empresa/{id}/video"""
     link_video: Optional[str] = None
 
     @field_validator('link_video')
@@ -183,7 +192,7 @@ class SchemaLinkVideoUpdate(BaseModel):
         return Empresa.validate_video_url(v)
 
 class SchemaTelefoneUpdate(BaseModel):
-    """Schema para POST /empresa/{id}/telefone"""
+    """Schema para PATCH /empresa/{id}/telefone"""
     telefone_contato: Optional[str] = None
     
     @field_validator('telefone_contato')
@@ -191,3 +200,104 @@ class SchemaTelefoneUpdate(BaseModel):
         # Reutiliza o validador principal
         return Empresa.validate_telefone(v)
     
+
+
+# --- ADICIONADO: Schemas CRUD para Empresa ---
+
+class EmpresaCreate(BaseModel):
+    """Schema para POST /empresa (Criar) - não tem ID"""
+    nome_da_empresa: str
+    endereco: str
+    cnpj: str
+    ano_de_fundacao: int
+    site: Optional[str] = None 
+    rede_social: Optional[str] = None 
+    cadastrado_por: Optional[str] = None 
+    cargo: Optional[str] = None 
+    email: Optional[str] = None 
+    setor_principal: str
+    setor_secundario: str
+    fase_da_startup: str
+    colaboradores: str 
+    publico_alvo: str
+    modelo_de_negocio: str
+    recebeu_investimento: str 
+    negocios_no_exterior: str 
+    faturamento: str
+    patente: str
+    ja_pivotou: str 
+    comunidades: str
+    solucao: str
+    link_apresentacao: Optional[str] = None
+    link_video: Optional[str] = None
+    telefone_contato: Optional[str] = None 
+    tag: Optional[str] = None    
+
+    # VALIDATORS 
+
+    @field_validator('link_apresentacao')
+    def validate_presentation_link(cls, v):
+        # Reutiliza o validador principal
+        return Empresa.validate_presentation_link(v)
+    
+    @field_validator('link_video')
+    def validate_video_url(cls, v):
+        # Reutiliza o validador principal
+        return Empresa.validate_video_url(v)
+    
+    @field_validator('telefone_contato')
+    def validate_telefone(cls, v):
+        # Reutiliza o validador principal
+        return Empresa.validate_telefone(v)
+    
+
+    # re-utilizando os métodos definidos na classe Empresa.
+
+class EmpresaUpdate(BaseModel):
+    """Schema para PUT /empresa/{id} (Update) - Todos os campos são opcionais"""
+    nome_da_empresa: Optional[str] = None
+    endereco: Optional[str] = None
+    cnpj: Optional[str] = None
+    ano_de_fundacao: Optional[int] = None
+    site: Optional[str] = None 
+    rede_social: Optional[str] = None 
+    cadastrado_por: Optional[str] = None 
+    cargo: Optional[str] = None 
+    email: Optional[str] = None 
+    setor_principal: Optional[str] = None
+    setor_secundario: Optional[str] = None
+    fase_da_startup: Optional[str] = None
+    colaboradores: Optional[str] = None 
+    publico_alvo: Optional[str] = None
+    modelo_de_negocio: Optional[str] = None
+    recebeu_investimento: Optional[str] = None 
+    negocios_no_exterior: Optional[str] = None 
+    faturamento: Optional[str] = None
+    patente: Optional[str] = None
+    ja_pivotou: Optional[str] = None 
+    comunidades: Optional[str] = None
+    solucao: Optional[str] = None
+    link_apresentacao: Optional[str] = None
+    link_video: Optional[str] = None
+    telefone_contato: Optional[str] = None 
+    tag: Optional[str] = None    
+    
+    # VALIDATORS 
+
+    @field_validator('link_apresentacao')
+    def validate_presentation_link(cls, v):
+        # Reutiliza o validador principal
+        return Empresa.validate_presentation_link(v)
+    
+    @field_validator('link_video')
+    def validate_video_url(cls, v):
+        # Reutiliza o validador principal
+        return Empresa.validate_video_url(v)
+    
+    @field_validator('telefone_contato')
+    def validate_telefone(cls, v):
+        # Reutiliza o validador principal
+        return Empresa.validate_telefone(v)
+    
+
+    # re-utilizando os métodos definidos na classe Empresa.
