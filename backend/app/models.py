@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, registry
 from sqlalchemy.types import Integer 
+from pgvector.sqlalchemy import Vector # importaçãopara lidar com vetores 
 #from .database import Base
 from .database import table_registry
 
@@ -40,6 +41,7 @@ class Empresa:
     ja_pivotou: Mapped[str] = mapped_column("já_pivotou?")
     comunidades: Mapped[str]
     solucao: Mapped[str] = mapped_column("solução", Text)
+    
 
     # --- 2. CAMPOS OPCIONAIS (Com default=None) ---
     # Estes DEVEM obrigatoriamente ficar por último
@@ -53,6 +55,8 @@ class Empresa:
     link_video: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     telefone_contato: Mapped[str | None] = mapped_column(String(20), nullable=True, default=None)
     tag: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
+    embedding_vector: Mapped[list[float] | None] = mapped_column(Vector(1024), nullable=True, default=None)
+
 
 
     #def __repr__(self):

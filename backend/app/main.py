@@ -20,8 +20,12 @@ from fastapi.staticfiles import StaticFiles
 # Importar text para comandos SQL puros
 from sqlalchemy import text 
 # -----
+# Imports para search 
 
 from .search_engine import SearchEngine
+#from .search_engine_vector import SearchEngineVector
+import backend.app.search_engine_vector as se_vector
+# -----
 from .database import engine,  get_db, table_registry # Base,
 from . import models, security, schemas, crud
 from .routers import upload_router, empresa_router
@@ -117,6 +121,13 @@ async def lifespan(app: FastAPI):
             print("Índice TF-IDF criado com sucesso!")
         else:
             print("Banco de dados vazio, SearchEngine iniciado sem dados.")
+
+        # 2. Inicializa Motor Vetorial (Não precisa de carregar empresas agora)
+        se_vector.search_engine_vector_instance = se_vector.SearchEngineVector()
+        
+        print("Motores de busca inicializados.")
+
+        
         
     except Exception as e:
         print(f"Erro na inicialização do NLTK/TF-IDF: {e}")
@@ -208,6 +219,9 @@ def optimized_search_companies(
     fase: Optional[str] = None,
     current_user: schemas.User = Depends(security.get_current_user)
 ):
+    """
+    Search antigo, que cria a lista de empresas no cash.
+    """
     global search_engine_instance
     
     if search_engine_instance is None:
@@ -226,6 +240,30 @@ def optimized_search_companies(
     
     return results
 
+@app.get("/optimized_search_vector", response_model=List[schemas.Empresa], status_code=status.HTTP_200_OK)
+def optimized_search_companies_vector(
+    query: str,
+    fase: Optional[str] = None,
+    db: Session = Depends(get_db), # <--- ADICIONADO: Necessário para a busca no banco
+    current_user: schemas.User = Depends(security.get_current_user)
+):
+    """
+    Search novo, que consulta a coluna embedding_vector no banco de dados.
+    """
+    if se_vector.search_engine_vector_instance is None:
+        raise HTTPException(status_code=503, detail="Motor vetorial não disponível.")
+
+    # Passamos o 'db' para a função
+    results = se_vector.search_engine_vector_instance.optimized_search_vector(
+        db=db, query=query, fase=fase
+    )
+    if not results:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Nenhuma startup encontrada com a sua pesquisa."
+        )
+    
+    return results
 
 # --- ADICIONADO: Montar o diretório estático ---
 

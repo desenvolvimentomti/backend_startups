@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import Optional
-from . import models, schemas, security # Importamos security para o hashing
+from . import models, schemas, security, embedding_service # Importamos security para o hashing
 
 # --- Funções CRUD para Empresa ---
 
@@ -16,6 +16,9 @@ def create_empresa(db: Session, empresa: schemas.EmpresaCreate):
     empresa_data = empresa.model_dump()
     # Cria a instância do modelo SQLAlchemy
     db_empresa = models.Empresa(**empresa_data)
+
+    # GERAÇÃO DO VETOR: Transforma os textos em tokens e salva na nova coluna
+    db_empresa.embedding_vector = embedding_service.generate_embedding(db_empresa)
 
     db.add(db_empresa)
     db.commit()
@@ -51,11 +54,21 @@ def update_empresa(db: Session, db_empresa: models.Empresa, empresa_data: schema
     Atualiza uma empresa (atualização parcial).
     Usado pelo 'empresa_router'.
     """
+
     # Converte o Pydantic model para um dict, ignorando campos não enviados (ex: None)
     update_data = empresa_data.model_dump(exclude_unset=True)
 
+    """Atualiza a empresa e regenera o vetor se campos de texto mudarem."""
+    # Lista de campos que afetam a busca
+    campos_busca = ['nome_da_empresa', 'solucao', 'setor_principal', 'setor_secundario', 'tag']
+    mudou_texto = any(campo in update_data for campo in campos_busca)
+
     for key, value in update_data.items():
         setattr(db_empresa, key, value)
+
+        # Se algum campo de texto mudou, precisamos atualizar a matriz de tokens
+    if mudou_texto:
+        db_empresa.embedding_vector = embedding_service.generate_embedding(db_empresa)
     
     db.commit()
     db.refresh(db_empresa)

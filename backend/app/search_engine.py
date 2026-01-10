@@ -11,12 +11,17 @@ from typing import List, Any
 from fuzzywuzzy import fuzz
 import inspect
 
+# Importações internas
+from . import crud, embedding_service
+from .models import Empresa
+
 try:
     nltk.download('punkt', quiet=True)
     nltk.download('stopwords', quiet=True)
 #    nltk.download('rslp', quiet=True)
 except Exception:
     pass
+
 
 def initialize_nlp_resources():
     global stemmer, stop_words_pt
@@ -60,11 +65,14 @@ def custom_tokenizer(text):
 
 
 class SearchEngine:
-    
+    """
+    Motor de Busca Antigo .
+    Usa cache de memória.
+    """
     def __init__(self, all_companies_list: List[Any]):
         self.all_companies_list = all_companies_list
         self.tfidf_vectorizer = None
-        self.company_vectors = None
+        self.company_vectors = None # sera inserido no db 
         
         if self.all_companies_list:
             # --- 1. INDEXAÇÃO ---
@@ -85,7 +93,7 @@ class SearchEngine:
         normalized_query = unidecode(query).lower()
         # --- 2. BUSCA TF-IDF ( em todas as informações da empressa)
         query_vector = self.tfidf_vectorizer.transform([normalized_query])
-        cosine_scores = cosine_similarity(query_vector, self.company_vectors).flatten()
+        cosine_scores = cosine_similarity(query_vector, self.company_vectors).flatten() # mudar o copany vectors para a ultima coluna 
         
         scored_companies = []
         RELEVANCE_THRESHOLD = 0.015
