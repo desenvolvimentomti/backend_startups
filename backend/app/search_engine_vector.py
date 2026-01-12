@@ -78,7 +78,7 @@ class SearchEngineVector:
 
             # Cálculo de Score Final
             # Como o filtro vetorial do banco já trouxe os mais parecidos, aplica o ajuste fino.
-            final_score = vector_score +(name_fuzzy_score * 1.5) + (context_fuzzy_score * 0.5)
+            final_score = vector_score +(name_fuzzy_score * 1.5) + (context_fuzzy_score * 0.6)
             
             # Limiar de corte para evitar resultados irrelevantes
             if final_score > 70.0: 
