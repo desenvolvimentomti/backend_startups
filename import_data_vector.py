@@ -2,30 +2,32 @@ import pandas as pd
 import sys
 import os
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session # Importamos a classe Session explicitamente
 
 # Adiciona o diretório raiz ao path para permitir importações dos módulos locais
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from backend.app.database import SessionLocal
 from backend.app.models import Empresa
 from backend.app import embedding_service
 
 def setup_and_import(csv_file_path, dbname, user, password, host, port, table_name):
     """
-    Script completo: Prepara o banco, limpa dados antigos, importa CSV e gera vetores.
+    Script de provisionamento com logs detalhados para depuração.
     """
     db_string = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
     engine = create_engine(db_string)
+    
+    # Criamos a factory de sessão vinculada a este engine específico
+    # Renomeamos para SessionFactory para evitar NameError com a classe Session
+    SessionFactory = sessionmaker(bind=engine)
 
     try:
         # 1. Preparação do Banco de Dados
         with engine.connect() as conn:
             print("--- Passo 1: Preparando extensões e estrutura ---")
-            # Ativa pgvector
             conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
             
-            # Verifica se a coluna de vetor existe
+            # Garante que a coluna existe
             check_col = conn.execute(text(f"""
                 SELECT column_name 
                 FROM information_schema.columns 
@@ -33,51 +35,64 @@ def setup_and_import(csv_file_path, dbname, user, password, host, port, table_na
             """)).fetchone()
             
             if not check_col:
-                print("Criando coluna 'embedding_vector' (1024 dimensões)...")
+                print(f"Criando coluna 'embedding_vector' na tabela '{table_name}'...")
                 conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN embedding_vector vector(1024);"))
             
-            # --- LIMPEZA PARA EVITAR UNIQUE VIOLATION ---
-            print(f"Limpando dados antigos da tabela '{table_name}' para evitar conflitos de ID...")
+            print(f"Limpando dados antigos da tabela '{table_name}'...")
             conn.execute(text(f"TRUNCATE TABLE {table_name} RESTART IDENTITY CASCADE;"))
-            
             conn.commit()
             print("Estrutura preparada e tabela limpa.")
 
-        # 2. Leitura e Limpeza do CSV
+        # 2. Leitura e Importação do CSV via Pandas
         print("\n--- Passo 2: Carregando CSV ---")
         df = pd.read_csv(csv_file_path, sep=',', quotechar='"')
         
-        # Ajusta nomes de colunas
+        # Normalização das colunas (mesmo padrão do models.py)
         df.columns = df.columns.str.replace(' ', '_').str.replace('(', '').str.replace(')', '').str.lower()
-        
-        # Garante que campos nulos sejam tratados como None (NULL no SQL)
         df = df.where(pd.notnull(df), None)
 
-        print(f"Inserindo {len(df)} registros na tabela '{table_name}'...")
-        # Inserimos os dados. Como usamos TRUNCATE acima, os IDs do CSV não colidirão com nada.
+        print(f"Inserindo {len(df)} registros via Pandas...")
+        # Usamos o engine diretamente. O Pandas faz o commit ao final.
         df.to_sql(table_name, engine, if_exists='append', index=False)
-        print("Dados importados com sucesso.")
+        print("Dados importados para o banco com sucesso.")
 
-        # 3. Geração de Vetores
+        # 3. Geração de Vetores via SQLAlchemy
         print("\n--- Passo 3: Gerando vetores de busca (Embedding) ---")
-        db = SessionLocal()
+        # Usamos a SessionFactory criada no início da função
+        db = SessionFactory()
         try:
+            # DEBUG: Vamos ver se o SQLAlchemy encontra as empresas
+            total_empresas = db.query(Empresa).count()
+            print(f"O SQLAlchemy detectou {total_empresas} empresas na tabela '{table_name}'.")
+
+            if total_empresas == 0:
+                print("ERRO: O SQLAlchemy não encontrou as empresas inseridas pelo Pandas.")
+                print("Verifique se o nome da tabela no models.py é exatamente igual a 'table_name'.")
+                return
+
+            # Filtramos as que precisam de vetor (que acabamos de inserir)
             empresas_pendentes = db.query(Empresa).filter(Empresa.embedding_vector == None).all()
-            total = len(empresas_pendentes)
+            total_pendentes = len(empresas_pendentes)
             
-            if total > 0:
-                print(f"Processando NLP (Hashing 1024) para {total} empresas...")
+            if total_pendentes > 0:
+                print(f"Processando tokens para {total_pendentes} empresas...")
                 for i, empresa in enumerate(empresas_pendentes, 1):
-                    # Gera o vetor usando sua lógica original de tokens
+                    # Gera a matriz de 1024 posições
                     vetor = embedding_service.generate_embedding(empresa)
                     empresa.embedding_vector = vetor
                     
-                    if i % 50 == 0:
+                    if i % 25 == 0:
                         db.commit()
-                        print(f"Progresso: {i}/{total}...", end="\r")
+                        print(f"Progresso: {i}/{total_pendentes}...", end="\r")
                 
                 db.commit()
-                print(f"\nTodos os {total} vetores foram gerados.")
+                print(f"\nSucesso: {total_pendentes} vetores gerados e salvos.")
+            else:
+                print("Aviso: Nenhuma empresa pendente de vetorização encontrada.")
+                
+        except Exception as e:
+            print(f"Erro no processamento de vetores: {e}")
+            db.rollback()
         finally:
             db.close()
 
@@ -94,27 +109,12 @@ def setup_and_import(csv_file_path, dbname, user, password, host, port, table_na
             conn.commit()
             print("Contador de IDs sincronizado.")
 
-        print("\nSUCESSO: O banco está populado, vetorizado e pronto para a API!")
+        print("\nCONCLUÍDO: O sistema está pronto para buscas vetoriais!")
 
     except Exception as e:
-        print(f"\nErro crítico: {e}")
+        print(f"\nErro crítico no processo: {e}")
     finally:
         engine.dispose()
-"""
-if __name__ == "__main__":
-    DB_NAME = "startups_db"
-    DB_USER = "startups"
-    DB_PASSWORD = "keystartups"
-    DB_HOST = "localhost"
-    DB_PORT = "5432"
-
-    CSV_FILE = "startups_data.csv"
-    TABLE_NAME = "startups"
-
-    #import_csv_to_postgres(CSV_FILE, DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, TABLE_NAME)
-    setup_and_import(CSV_FILE, DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, TABLE_NAME)
-    #"""
-
 # atualizar db online dp Render 
 
 
