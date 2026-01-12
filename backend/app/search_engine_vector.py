@@ -76,9 +76,14 @@ class SearchEngineVector:
             contexto_norm = unidecode(contexto_raw).lower()
             context_fuzzy_score = fuzz.token_set_ratio(contexto_norm, normalized_query)
 
+            # Contexto (Tag)- dando maior peso 
+            tag_raw = f"{company.tag}"
+            tag_norm = unidecode(tag_raw).lower()
+            tag_fuzzy_score = fuzz.token_set_ratio(tag_norm, normalized_query)
+
             # Cálculo de Score Final
             # Como o filtro vetorial do banco já trouxe os mais parecidos, aplica o ajuste fino.
-            final_score = vector_score +(name_fuzzy_score * 1.5) + (context_fuzzy_score * 0.6)
+            final_score = vector_score +(name_fuzzy_score * 1.5) + (context_fuzzy_score * 0.4)+ (tag_fuzzy_score * 0.5)
             
             # Limiar de corte para evitar resultados irrelevantes
             if final_score > 70.0: 
