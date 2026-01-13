@@ -28,7 +28,7 @@ import backend.app.search_engine_vector as se_vector
 # -----
 from .database import engine,  get_db, table_registry # Base,
 from . import models, security, schemas, crud
-from .routers import upload_router, empresa_router
+from .routers import upload_router, empresa_router, agent_router
 from .schemas import UserLogin
 
 
@@ -143,6 +143,7 @@ app = FastAPI(title="API de Pesquisa de Startups", lifespan=lifespan)
 # --- Montar Roteadores ---
 app.include_router(upload_router.router, tags=["Uploads"])
 app.include_router(empresa_router.router)
+app.include_router(agent_router.router)
 
 
 @app.post("/register", response_model=schemas.Token)
