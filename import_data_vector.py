@@ -33,8 +33,8 @@ def setup_and_import(csv_file_path, dbname, user, password, host, port, table_na
             """)).fetchone()
             
             if not check_col:
-                print("Criando coluna 'embedding_vector' (1024 dimensões)...")
-                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN embedding_vector vector(1024);"))
+                print("Criando coluna 'embedding_vector' (1536 dimensões)...")
+                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN embedding_vector vector(1536);"))
             
             # --- LIMPEZA PARA EVITAR UNIQUE VIOLATION ---
             print(f"Limpando dados antigos da tabela '{table_name}' para evitar conflitos de ID...")
@@ -66,9 +66,9 @@ def setup_and_import(csv_file_path, dbname, user, password, host, port, table_na
             total = len(empresas_pendentes)
             
             if total > 0:
-                print(f"Processando NLP (Hashing 1024) para {total} empresas...")
+                print(f"Processando OpenAI embeddings (1536) para {total} empresas...")
                 for i, empresa in enumerate(empresas_pendentes, 1):
-                    # Gera o vetor usando sua lógica original de tokens
+                    # Gera o vetor usando OpenAI text-embedding-3-small
                     vetor = embedding_service.generate_embedding(empresa)
                     empresa.embedding_vector = vetor
                     
