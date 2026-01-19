@@ -55,7 +55,7 @@ class Empresa:
     link_video: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     telefone_contato: Mapped[str | None] = mapped_column(String(20), nullable=True, default=None)
     tag: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
-    embedding_vector: Mapped[list[float] | None] = mapped_column(Vector(1024), nullable=True, default=None)
+    embedding_vector: Mapped[list[float] | None] = mapped_column(Vector(1536), nullable=True, default=None)
 
 
 
